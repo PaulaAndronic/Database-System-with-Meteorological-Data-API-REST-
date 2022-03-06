@@ -1,0 +1,55 @@
+version: '3.8'
+services:
+  
+  db:
+    image: postgres
+    restart: always
+    networks:
+      - network-api
+      - network-gui
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 250699
+      POSTGRES_DB: info
+    ports:
+      - "5432:5432"
+  
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    networks:
+      - network-gui
+    environment:
+      PGADMIN_DEFAULT_EMAIL: postgres@postgres.com
+      PGADMIN_DEFAULT_PASSWORD: 250699
+    ports:
+      - "5050:80"
+
+  server:
+    depends_on:
+      - db
+    links:
+      - db
+    build:
+      context: .
+      dockerfile: ./src/Dockerfile
+    image: meteo-server
+    restart: always
+    container_name: meteo-server
+    ports:
+      - "5000:5000"
+    networks:
+      - network-api
+    environment:
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 250699
+      POSTGRES_DB: info
+      POSTGRES_HOST: db
+
+networks:
+  network-api:
+    name: network-api
+  network-gui:
+    name: network-gui
